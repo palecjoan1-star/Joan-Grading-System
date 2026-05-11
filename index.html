@@ -291,28 +291,53 @@
 
             <!-- Add Grades Section -->
             <div id="add-grades" class="form-section active">
-                <div class="stats">
-                    <h3>Current Average</h3>
-                    <div id="averageGrade" class="average-grade">--</div>
-                </div>
 
-                <div class="input-group">
-                    <label>Subject:</label>
-                    <input type="text" id="subjectInput" placeholder="Enter subject name">
-                </div>
+    <div class="input-group">
+        <label>Student Name:</label>
+        <input type="text" id="studentName" placeholder="Enter name">
+    </div>
 
-                <div class="input-group">
-                    <label>Grade (0-100):</label>
-                    <input type="number" id="gradeInput" min="0" max="100" placeholder="Enter grade">
-                </div>
+    <div class="input-group">
+        <label>Section:</label>
+        <input type="text" id="studentSection" placeholder="Enter section">
+    </div>
 
-                <div class="input-group">
-                    <label>Remarks:</label>
-                    <input type="text" id="remarksInput" placeholder="Enter remarks (optional)">
-                </div>
+    <h2>Grade Components</h2>
 
-                <button class="btn btn-primary" onclick="addSubject()">Add Subject</button>
-                <button class="btn btn-success" onclick="saveRecord()">Save Record</button>
+    <div class="input-group">
+        <label>Quiz (20%)</label>
+        <input type="number" id="quiz" min="0" max="100">
+    </div>
+
+    <div class="input-group">
+        <label>Laboratory (30%)</label>
+        <input type="number" id="lab" min="0" max="100">
+    </div>
+
+    <div class="input-group">
+        <label>Assignment (10%)</label>
+        <input type="number" id="assignment" min="0" max="100">
+    </div>
+
+    <div class="input-group">
+        <label>Attendance (10%)</label>
+        <input type="number" id="attendance" min="0" max="100">
+    </div>
+
+    <div class="input-group">
+        <label>Major Exam (30%)</label>
+        <input type="number" id="exam" min="0" max="100">
+    </div>
+
+    <div class="stats">
+        <h3>Total Grade</h3>
+        <div id="totalGrade" class="average-grade">--</div>
+        <p id="remarks"></p>
+    </div>
+
+    <button class="btn btn-primary" onclick="calculateGrade()">Calculate</button>
+    <button class="btn btn-success" onclick="saveRecord()">Save Record</button>
+
             </div>
 
             <!-- View Records Section -->
@@ -436,34 +461,56 @@
             document.getElementById('averageGrade').textContent = average;
         }
 
+function calculateGrade() {
+    const quiz = parseFloat(document.getElementById('quiz').value) || 0;
+    const lab = parseFloat(document.getElementById('lab').value) || 0;
+    const assignment = parseFloat(document.getElementById('assignment').value) || 0;
+    const attendance = parseFloat(document.getElementById('attendance').value) || 0;
+    const exam = parseFloat(document.getElementById('exam').value) || 0;
+
+    const total =
+        (quiz * 0.20) +
+        (lab * 0.30) +
+        (assignment * 0.10) +
+        (attendance * 0.10) +
+        (exam * 0.30);
+
+    document.getElementById('totalGrade').textContent = total.toFixed(2);
+
+    let remark = total >= 75 ? "Passed" : "Failed";
+    document.getElementById('remarks').textContent = remark;
+
+    return { total: total.toFixed(2), remark };
+}
         function saveRecord() {
-            if (currentGrades.length === 0) {
-                alert('Please add at least one subject before saving a record.');
-                return;
-            }
+    const name = document.getElementById('studentName').value.trim();
+    const section = document.getElementById('studentSection').value.trim();
 
-            const recordName = prompt('Enter record name (e.g., "Midterm 2024"):', 'New Record');
-            if (recordName) {
-                const record = {
-                    name: recordName,
-                    date: new Date().toLocaleDateString(),
-                    grades: [...currentGrades],
-                    average: document.getElementById('averageGrade').textContent
-                };
+    if (!name || !section) {
+        alert('Please enter student name and section.');
+        return;
+    }
 
-                savedRecords.unshift(record);
-                localStorage.setItem('savedRecords', JSON.stringify(savedRecords));
+    const result = calculateGrade();
 
-                // Clear current grades
-                currentGrades = [];
-                localStorage.setItem('currentGrades', JSON.stringify(currentGrades));
+    const record = {
+        name,
+        section,
+        date: new Date().toLocaleDateString(),
+        quiz: document.getElementById('quiz').value,
+        lab: document.getElementById('lab').value,
+        assignment: document.getElementById('assignment').value,
+        attendance: document.getElementById('attendance').value,
+        exam: document.getElementById('exam').value,
+        total: result.total,
+        remark: result.remark
+    };
 
-                renderRecords();
-                renderSubjects();
-                updateAverage();
+    savedRecords.unshift(record);
+    localStorage.setItem('savedRecords', JSON.stringify(savedRecords));
 
-                alert('Record saved successfully!');
-            }
+    renderRecords();
+    alert('Record saved!');
         }
 
         function deleteRecord(index) {
@@ -472,46 +519,54 @@
                 localStorage.setItem('savedRecords', JSON.stringify(savedRecords));
                 renderRecords();
             }
-        }
+        }function renderRecords() {
+    const container = document.getElementById('recordsTableContainer');
 
-        function renderRecords() {
-            const container = document.getElementById('recordsTableContainer');
-            
-            if (savedRecords.length === 0) {
-                container.innerHTML = '<div class="no-data">No records saved yet. Add grades and save a record!</div>';
-                return;
-            }
+    if (savedRecords.length === 0) {
+        container.innerHTML = '<div class="no-data">No records yet.</div>';
+        return;
+    }
 
-            let html = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Record Name</th>
-                            <th>Date</th>
-                            <th>Average</th>
-                            <th>Total Subjects</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
+    let html = `
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Section</th>
+                    <th>Quiz</th>
+                    <th>Lab</th>
+                    <th>Assignment</th>
+                    <th>Attendance</th>
+                    <th>Exam</th>
+                    <th>Total</th>
+                    <th>Remarks</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
 
-            savedRecords.forEach((record, index) => {
-                html += `
-                    <tr>
-                        <td><strong>${record.name}</strong></td>
-                        <td>${record.date}</td>
-                        <td><strong>${record.average}</strong></td>
-                        <td>${record.grades.length}</td>
-                        <td>
-                            <button class="btn btn-danger" onclick="deleteRecord(${index})">Delete</button>
-                        </td>
-                    </tr>
-                `;
-            });
+    savedRecords.forEach((r, index) => {
+        html += `
+            <tr>
+                <td>${r.name}</td>
+                <td>${r.section}</td>
+                <td>${r.quiz}</td>
+                <td>${r.lab}</td>
+                <td>${r.assignment}</td>
+                <td>${r.attendance}</td>
+                <td>${r.exam}</td>
+                <td><strong>${r.total}</strong></td>
+                <td>${r.remark}</td>
+                <td>
+                    <button class="btn btn-danger" onclick="deleteRecord(${index})">Delete</button>
+                </td>
+            </tr>
+        `;
+    });
 
-            html += '</tbody></table>';
-            container.innerHTML = html;
+    html += '</tbody></table>';
+    container.innerHTML = html;
         }
 
         // Allow Enter key to add subject
