@@ -623,7 +623,12 @@ function calculateGrade() {
         });
         function computeScores() {
     function avg(ids) {
-        let values = ids.map(id => parseFloat(document.getElementById(id).value) || 0);
+        let values = ids
+            .map(id => parseFloat(document.getElementById(id).value))
+            .filter(val => !isNaN(val)); // remove empty inputs
+
+        if (values.length === 0) return "--";
+
         let sum = values.reduce((a, b) => a + b, 0);
         return (sum / values.length).toFixed(2);
     }
@@ -636,11 +641,15 @@ function calculateGrade() {
     document.getElementById('labAvg').textContent = labAvg;
     document.getElementById('assignAvg').textContent = assignAvg;
 
-    // AUTO FILL MAIN COMPONENTS
-    document.getElementById('quiz').value = quizAvg;
-    document.getElementById('lab').value = labAvg;
-    document.getElementById('assignment').value = assignAvg;
+    // AUTO FILL only if valid
+    if (quizAvg !== "--") document.getElementById('quiz').value = quizAvg;
+    if (labAvg !== "--") document.getElementById('lab').value = labAvg;
+    if (assignAvg !== "--") document.getElementById('assignment').value = assignAvg;
         }
+        // AUTO COMPUTE WHILE TYPING
+['q1','q2','q3','l1','l2','l3','a1','a2','a3'].forEach(id => {
+    document.getElementById(id).addEventListener('input', computeScores);
+});
     </script>
 </body>
 </html>
