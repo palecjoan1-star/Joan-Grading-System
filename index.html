@@ -301,6 +301,52 @@
         <label>Section:</label>
         <input type="text" id="studentSection" placeholder="Enter section">
     </div>
+                <h2>Detailed Scores</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Component</th>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>Average</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <!-- QUIZ -->
+        <tr>
+            <td><strong>Quiz</strong></td>
+            <td><input type="number" id="q1"></td>
+            <td><input type="number" id="q2"></td>
+            <td><input type="number" id="q3"></td>
+            <td id="quizAvg">--</td>
+        </tr>
+
+        <!-- LAB -->
+        <tr>
+            <td><strong>Laboratory</strong></td>
+            <td><input type="number" id="l1"></td>
+            <td><input type="number" id="l2"></td>
+            <td><input type="number" id="l3"></td>
+            <td id="labAvg">--</td>
+        </tr>
+
+        <!-- ASSIGNMENT -->
+        <tr>
+            <td><strong>Assignment</strong></td>
+            <td><input type="number" id="a1"></td>
+            <td><input type="number" id="a2"></td>
+            <td><input type="number" id="a3"></td>
+            <td id="assignAvg">--</td>
+        </tr>
+
+    </tbody>
+</table>
+
+<br>
+<button class="btn btn-primary" onclick="computeScores()">Compute Scores</button>
 
     <h2>Grade Components</h2>
 
@@ -575,6 +621,26 @@ function calculateGrade() {
                 addSubject();
             }
         });
+        function computeScores() {
+    function avg(ids) {
+        let values = ids.map(id => parseFloat(document.getElementById(id).value) || 0);
+        let sum = values.reduce((a, b) => a + b, 0);
+        return (sum / values.length).toFixed(2);
+    }
+
+    const quizAvg = avg(['q1','q2','q3']);
+    const labAvg = avg(['l1','l2','l3']);
+    const assignAvg = avg(['a1','a2','a3']);
+
+    document.getElementById('quizAvg').textContent = quizAvg;
+    document.getElementById('labAvg').textContent = labAvg;
+    document.getElementById('assignAvg').textContent = assignAvg;
+
+    // AUTO FILL MAIN COMPONENTS
+    document.getElementById('quiz').value = quizAvg;
+    document.getElementById('lab').value = labAvg;
+    document.getElementById('assignment').value = assignAvg;
+        }
     </script>
 </body>
 </html>
